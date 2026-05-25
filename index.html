@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navora — Travel Planning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root, [data-theme="dark"] {
+      --surface: #171614;
+      --surface-raised: #1f1d1a;
+      --surface-overlay: #282522;
+      --text: #f5f0e8;
+      --text-muted: #a89f8f;
+      --accent: #01696f;
+      --accent-hover: #018a92;
+      --accent-soft: rgba(1, 105, 111, 0.15);
+      --border: rgba(245, 240, 232, 0.08);
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+      --hero-overlay: linear-gradient(to top, #171614 0%, transparent 60%);
+      --cat-food-bg: rgba(230, 126, 80, 0.18);
+      --cat-food-fg: #e67e50;
+      --cat-culture-bg: rgba(155, 120, 200, 0.18);
+      --cat-culture-fg: #9b78c8;
+      --cat-nature-bg: rgba(72, 160, 110, 0.18);
+      --cat-nature-fg: #48a06e;
+      --cat-transport-bg: rgba(90, 140, 200, 0.18);
+      --cat-transport-fg: #5a8cc8;
+      --cat-stay-bg: rgba(200, 170, 90, 0.18);
+      --cat-stay-fg: #c8aa5a;
+    }
+
+    [data-theme="light"] {
+      --surface: #faf7f2;
+      --surface-raised: #ffffff;
+      --surface-overlay: #f0ebe3;
+      --text: #1a1816;
+      --text-muted: #6b6358;
+      --accent: #01696f;
+      --accent-hover: #014f54;
+      --accent-soft: rgba(1, 105, 111, 0.1);
+      --border: rgba(26, 24, 22, 0.1);
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      --hero-overlay: linear-gradient(to top, #faf7f2 0%, transparent 60%);
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Satoshi', system-ui, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100dvh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, .display {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    #app { min-height: 100dvh; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      min-height: 44px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--surface-overlay); }
+    .btn-sm {
+      padding: 0.4rem 0.75rem;
+      min-height: 36px;
+      font-size: 0.875rem;
+    }
+    .btn-icon {
+      padding: 0.5rem;
+      min-height: 36px;
+      min-width: 36px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .btn-icon:hover { color: var(--text); background: var(--surface-overlay); }
+
+    .input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input:focus { border-color: var(--accent); }
+    .input::placeholder { color: var(--text-muted); }
+
+    .card {
+      background: var(--surface-raised);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+    .pill-food { background: var(--cat-food-bg); color: var(--cat-food-fg); }
+    .pill-culture { background: var(--cat-culture-bg); color: var(--cat-culture-fg); }
+    .pill-nature { background: var(--cat-nature-bg); color: var(--cat-nature-fg); }
+    .pill-transport { background: var(--cat-transport-bg); color: var(--cat-transport-fg); }
+    .pill-stay { background: var(--cat-stay-bg); color: var(--cat-stay-fg); }
+
+    .toast {
+      position: fixed;
+      bottom: calc(5rem + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--accent);
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Home */
+    .home {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    .home-hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem 1rem 3rem;
+      background: radial-gradient(ellipse at 50% 0%, var(--accent-soft) 0%, transparent 70%);
+    }
+    .home-logo {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .home-tagline {
+      color: var(--text-muted);
+      max-width: 28rem;
+      margin-bottom: 2rem;
+      font-size: 1.05rem;
+    }
+    .home-search {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 1rem;
+    }
+    .home-search .input { flex: 1; }
+    .home-samples {
+      padding: 2rem 1rem 3rem;
+      max-width: 960px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .home-samples h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+      font-family: 'Satoshi', sans-serif;
+      font-weight: 500;
+    }
+    .sample-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 600px) {
+      .sample-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .sample-card {
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .sample-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .sample-thumb {
+      height: 120px;
+      background-size: cover;
+      background-position: center;
+    }
+    .sample-body { padding: 1rem; }
+    .sample-body h3 { font-size: 1.1rem; margin-bottom: 0.25rem; }
+    .sample-body p { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Builder */
+    .builder {
+      display: flex;
+      min-height: 100dvh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .builder-sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: var(--surface-raised);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      overflow-y: auto;
+    }
+    .builder-main {
+      flex: 1;
+      padding: 1.25rem;
+      padding-bottom: 6rem;
+      overflow-y: auto;
+      min-width: 0;
+    }
+    .builder-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .day-title-wrap { overflow: hidden; }
+    .day-title {
+      font-size: clamp(1.75rem, 5vw, 2.25rem);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .day-title.animating {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .day-meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .day-meta.animating {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    .day-list { display: flex; flex-direction: column; gap: 0.35rem; }
+    .day-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s;
+    }
+    .day-item:hover { background: var(--surface-overlay); }
+    .day-item.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .day-item span { flex: 1; font-weight: 500; }
+    .trip-title-input {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      width: 100%;
+      outline: none;
+      border-bottom: 1px solid transparent;
+      padding: 0.25rem 0;
+    }
+    .trip-title-input:focus { border-bottom-color: var(--accent); }
+    .sidebar-actions {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .time-block { margin-bottom: 1.75rem; }
+    .time-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .time-block-header h3 {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 2rem;
+    }
+    .activity-list.drag-over {
+      outline: 2px dashed var(--accent);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+    .activity-card {
+      padding: 1rem;
+      position: relative;
+    }
+    .activity-card.activity-enter {
+      animation: slideUpFade 0.35s ease forwards;
+    }
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .activity-card.dragging { opacity: 0.5; }
+    .activity-card-header {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+    .drag-handle {
+      cursor: grab;
+      color: var(--text-muted);
+      padding: 0.25rem;
+      flex-shrink: 0;
+    }
+    .drag-handle:active { cursor: grabbing; }
+    .activity-fields { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+    .activity-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .activity-row .input { flex: 1; min-width: 120px; }
+    .activity-row select {
+      padding: 0.5rem 0.75rem;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+    }
+    .empty-state {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 2rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      animation: pulseBorder 2s ease-in-out infinite;
+      transition: background 0.2s;
+    }
+    .empty-state:hover {
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+    @keyframes pulseBorder {
+      0%, 100% { border-color: var(--border); }
+      50% { border-color: var(--accent); }
+    }
+    .fab-add {
+      position: fixed;
+      bottom: calc(4.5rem + env(safe-area-inset-bottom));
+      right: 1rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .mobile-tabs {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface-raised);
+      border-top: 1px solid var(--border);
+      padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+    .mobile-tabs-inner {
+      display: flex;
+      justify-content: space-around;
+    }
+    .mobile-tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.5rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .mobile-tab.active { color: var(--accent); }
+    .mobile-panel { display: none; }
+    .mobile-panel.active { display: block; }
+    .map-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 50vh;
+      text-align: center;
+      color: var(--text-muted);
+      gap: 1rem;
+      padding: 2rem;
+    }
+    .map-placeholder h3 {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    .share-preview {
+      padding: 2rem 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+    .day-chips {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .day-chip {
+      flex-shrink: 0;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-raised);
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    .day-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    @media (max-width: 767px) {
+      .builder { flex-direction: column; }
+      .builder-sidebar { display: none; }
+      .builder-main { padding-bottom: 7rem; }
+      .fab-add { display: flex; }
+      .mobile-tabs { display: block; }
+      .builder-desktop-only { display: none !important; }
+    }
+    .builder-header-mobile { margin-bottom: 1rem; }
+    .mobile-hidden { display: none; }
+    @media (min-width: 768px) {
+      .mobile-only { display: none !important; }
+      .mobile-hidden { display: block !important; }
+      .fab-add { display: none; }
+    }
+
+    /* Shareview */
+    .shareview { min-height: 100dvh; }
+    .share-hero {
+      position: relative;
+      min-height: 42vh;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .share-hero-fallback {
+      background: linear-gradient(135deg, var(--accent) 0%, #0a3d40 100%);
+    }
+    .share-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--hero-overlay);
+    }
+    .share-hero-content {
+      position: relative;
+      padding: 2rem 1.25rem;
+      z-index: 1;
+    }
+    .share-hero-content h1 {
+      font-size: clamp(2rem, 6vw, 3rem);
+      margin-bottom: 0.5rem;
+    }
+    .share-hero-content .dates {
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .share-hero-content .tagline {
+      font-style: italic;
+      opacity: 0.9;
+    }
+    .share-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    .share-body { padding: 1.5rem 1.25rem 4rem; max-width: 640px; margin: 0 auto; }
+    .timeline-day { margin-bottom: 2.5rem; }
+    .timeline-day-label {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline {
+      position: relative;
+      padding-left: 2.5rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-block-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin: 1.25rem 0 0.75rem;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.25rem;
+    }
+    .timeline-icon {
+      position: absolute;
+      left: -2.5rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateX(-50%);
+      left: 0;
+      margin-left: -1px;
+    }
+    .timeline-icon i, .timeline-icon svg { width: 16px; height: 16px; }
+    .timeline-icon-food { background: var(--cat-food-bg); color: var(--cat-food-fg); }
+    .timeline-icon-culture { background: var(--cat-culture-bg); color: var(--cat-culture-fg); }
+    .timeline-icon-nature { background: var(--cat-nature-bg); color: var(--cat-nature-fg); }
+    .timeline-icon-transport { background: var(--cat-transport-bg); color: var(--cat-transport-fg); }
+    .timeline-icon-stay { background: var(--cat-stay-bg); color: var(--cat-stay-fg); }
+    .timeline-item h4 { font-size: 1.05rem; margin-bottom: 0.2rem; }
+    .timeline-item .loc {
+      font-size: 0.875rem;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+    }
+    .timeline-item .notes {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .share-footer {
+      text-align: center;
+      padding: 3rem 1.25rem;
+      background: var(--surface-raised);
+      border-top: 1px solid var(--border);
+    }
+    .share-footer p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text);
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    const CATEGORIES = ['food', 'culture', 'nature', 'transport', 'stay'];
+    const BLOCKS = ['morning', 'afternoon', 'evening'];
+    const BLOCK_LABELS = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening' };
+    const CAT_ICONS = {
+      food: 'utensils',
+      culture: 'landmark',
+      nature: 'trees',
+      transport: 'train-front',
+      stay: 'bed-double'
+    };
+
+    let idCounter = 0;
+    function uid() {
+      return crypto.randomUUID?.() || `id-${++idCounter}-${Date.now()}`;
+    }
+
+    function emptyBlocks() {
+      return { morning: [], afternoon: [], evening: [] };
+    }
+
+    function cloneTrip(trip) {
+      return JSON.parse(JSON.stringify(trip));
+    }
+
+    const SAMPLE_TRIPS = [
+      {
+        title: 'Tokyo Food & Culture',
+        destination: 'Tokyo, Japan',
+        tagline: 'Neon nights and noodle mornings',
+        startDate: '2026-04-10',
+        endDate: '2026-04-14',
+        days: [
+          {
+            id: 's1d1', label: 'Day 1', date: '2026-04-10',
+            blocks: {
+              morning: [{ id: 's1a1', title: 'Tsukiji Outer Market', location: 'Chuo City', notes: 'Fresh sushi breakfast', category: 'food', link: '' }],
+              afternoon: [{ id: 's1a2', title: 'Senso-ji Temple', location: 'Asakusa', notes: 'Explore Nakamise shopping street', category: 'culture', link: '' }],
+              evening: [{ id: 's1a3', title: 'Shibuya Crossing', location: 'Shibuya', notes: 'Dinner at a local izakaya', category: 'food', link: '' }]
+            }
+          },
+          {
+            id: 's1d2', label: 'Day 2', date: '2026-04-11',
+            blocks: {
+              morning: [{ id: 's1a4', title: 'Meiji Shrine', location: 'Shibuya', notes: 'Peaceful forest walk', category: 'nature', link: '' }],
+              afternoon: [{ id: 's1a5', title: 'Harajuku', location: 'Takeshita Street', notes: 'Street fashion and crepes', category: 'culture', link: '' }],
+              evening: [{ id: 's1a6', title: 'TeamLab Planets', location: 'Toyosu', notes: 'Book tickets in advance', category: 'culture', link: 'https://teamlab.art' }]
+            }
+          }
+        ]
+      },
+      {
+        title: 'Iceland Ring Road',
+        destination: 'Reykjavik, Iceland',
+        tagline: 'Fire, ice, and endless horizons',
+        startDate: '2026-07-01',
+        endDate: '2026-07-08',
+        days: [
+          {
+            id: 's2d1', label: 'Day 1', date: '2026-07-01',
+            blocks: {
+              morning: [{ id: 's2a1', title: 'Blue Lagoon', location: 'Grindavik', notes: 'Pre-book spa entry', category: 'nature', link: '' }],
+              afternoon: [{ id: 's2a2', title: 'Reykjavik Walking Tour', location: 'Downtown', notes: 'Hallgrímskirkja church', category: 'culture', link: '' }],
+              evening: [{ id: 's2a3', title: 'Hotel Reykjavik Centrum', location: 'Reykjavik', notes: 'Check in and rest', category: 'stay', link: '' }]
+            }
+          },
+          {
+            id: 's2d2', label: 'Day 2', date: '2026-07-02',
+            blocks: {
+              morning: [{ id: 's2a4', title: 'Golden Circle Drive', location: 'Selfoss', notes: 'Rent 4x4', category: 'transport', link: '' }],
+              afternoon: [{ id: 's2a5', title: 'Gullfoss Waterfall', location: 'Golden Circle', notes: 'Rain jacket essential', category: 'nature', link: '' }],
+              evening: [{ id: 's2a6', title: 'Geysir Hot Springs', location: 'Haukadalur', notes: 'Strokkur erupts every 5-10 min', category: 'nature', link: '' }]
+            }
+          }
+        ]
+      },
+      {
+        title: 'Lisbon Long Weekend',
+        destination: 'Lisbon, Portugal',
+        tagline: 'Tiles, tram rides, and ocean breeze',
+        startDate: '2026-05-15',
+        endDate: '2026-05-18',
+        days: [
+          {
+            id: 's3d1', label: 'Day 1', date: '2026-05-15',
+            blocks: {
+              morning: [{ id: 's3a1', title: 'Pastéis de Belém', location: 'Belém', notes: 'Original custard tarts', category: 'food', link: '' }],
+              afternoon: [{ id: 's3a2', title: 'Jerónimos Monastery', location: 'Belém', notes: 'UNESCO World Heritage site', category: 'culture', link: '' }],
+              evening: [{ id: 's3a3', title: 'Time Out Market', location: 'Cais do Sodré', notes: 'Food hall dinner', category: 'food', link: '' }]
+            }
+          },
+          {
+            id: 's3d2', label: 'Day 2', date: '2026-05-16',
+            blocks: {
+              morning: [{ id: 's3a4', title: 'Alfama District', location: 'Alfama', notes: 'Fado music and miradouros', category: 'culture', link: '' }],
+              afternoon: [{ id: 's3a5', title: 'Tram 28', location: 'Martim Moniz', notes: 'Classic yellow tram ride', category: 'transport', link: '' }],
+              evening: [{ id: 's3a6', title: 'LX Factory', location: 'Alcântara', notes: 'Creative hub and rooftop bars', category: 'culture', link: '' }]
+            }
+          }
+        ]
+      }
+    ];
+
+    const appState = {
+      theme: 'dark',
+      trip: null,
+      activeDayId: null,
+      mobileTab: 'days',
+      newActivityIds: new Set()
+    };
+
+    function unsplashUrl(destination) {
+      const q = encodeURIComponent((destination || 'travel') + ',travel');
+      return `https://source.unsplash.com/1600x900/?${q}`;
+    }
+
+    function formatDateRange(start, end) {
+      if (!start) return '';
+      const opts = { month: 'short', day: 'numeric', year: 'numeric' };
+      const s = new Date(start + 'T12:00:00').toLocaleDateString('en-US', opts);
+      if (!end || end === start) return s;
+      const e = new Date(end + 'T12:00:00').toLocaleDateString('en-US', opts);
+      return `${s} – ${e}`;
+    }
+
+    function getRoute() {
+      const h = location.hash.replace('#', '').trim();
+      if (h === 'plan') return 'plan';
+      if (h === 'view') return 'view';
+      return 'home';
+    }
+
+    function navigate(hash) {
+      location.hash = hash ? `#${hash}` : '';
+    }
+
+    function createBlankTrip(destination = '') {
+      const dayId = uid();
+      return {
+        title: destination ? `Trip to ${destination.split(',')[0]}` : 'My Trip',
+        destination: destination || '',
+        tagline: '',
+        startDate: '',
+        endDate: '',
+        days: [{ id: dayId, label: 'Day 1', date: '', blocks: emptyBlocks() }]
+      };
+    }
+
+    function loadTrip(tripData) {
+      appState.trip = cloneTrip(tripData);
+      appState.trip.days = appState.trip.days.map((d, i) => ({
+        ...d,
+        id: uid(),
+        blocks: {
+          morning: (d.blocks.morning || []).map(a => ({ ...a, id: uid() })),
+          afternoon: (d.blocks.afternoon || []).map(a => ({ ...a, id: uid() })),
+          evening: (d.blocks.evening || []).map(a => ({ ...a, id: uid() }))
+        }
+      }));
+      appState.activeDayId = appState.trip.days[0]?.id || null;
+    }
+
+    function getActiveDay() {
+      if (!appState.trip) return null;
+      return appState.trip.days.find(d => d.id === appState.activeDayId) || appState.trip.days[0];
+    }
+
+    function setActiveDay(dayId) {
+      if (appState.activeDayId === dayId) return;
+      const titles = document.querySelectorAll('.day-title, .day-meta');
+      titles.forEach(el => el.classList.add('animating'));
+      setTimeout(() => {
+        appState.activeDayId = dayId;
+        render();
+      }, 180);
+    }
+
+    function addDay() {
+      if (!appState.trip) return;
+      const n = appState.trip.days.length + 1;
+      const id = uid();
+      appState.trip.days.push({ id, label: `Day ${n}`, date: '', blocks: emptyBlocks() });
+      appState.activeDayId = id;
+      render();
+    }
+
+    function removeDay(dayId) {
+      if (!appState.trip || appState.trip.days.length <= 1) return;
+      appState.trip.days = appState.trip.days.filter(d => d.id !== dayId);
+      if (appState.activeDayId === dayId) {
+        appState.activeDayId = appState.trip.days[0].id;
+      }
+      render();
+    }
+
+    function addActivity(dayId, block) {
+      const day = appState.trip?.days.find(d => d.id === dayId);
+      if (!day) return;
+      const actId = uid();
+      day.blocks[block].push({
+        id: actId,
+        title: '',
+        location: '',
+        notes: '',
+        category: 'culture',
+        link: ''
+      });
+      appState.newActivityIds.add(actId);
+      render();
+    }
+
+    function updateActivity(dayId, block, actId, field, value) {
+      const day = appState.trip?.days.find(d => d.id === dayId);
+      const act = day?.blocks[block]?.find(a => a.id === actId);
+      if (act) {
+        act[field] = value;
+        if (field === 'title' || field === 'location') {
+          /* debounce-free live update — no re-render for typing */
+        }
+      }
+    }
+
+    function deleteActivity(dayId, block, actId) {
+      const day = appState.trip?.days.find(d => d.id === dayId);
+      if (!day) return;
+      day.blocks[block] = day.blocks[block].filter(a => a.id !== actId);
+      render();
+    }
+
+    function reorderActivity(dayId, block, fromIndex, toIndex) {
+      const list = appState.trip?.days.find(d => d.id === dayId)?.blocks[block];
+      if (!list || fromIndex === toIndex) return;
+      const [item] = list.splice(fromIndex, 1);
+      list.splice(toIndex, 0, item);
+      render();
+    }
+
+    function toggleTheme() {
+      appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = appState.theme;
+      render();
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    function copyShareLink() {
+      const url = location.href.split('#')[0] + '#view';
+      navigator.clipboard.writeText(url).then(() => showToast('Copied!')).catch(() => showToast('Copy failed'));
+    }
+
+    function escapeHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s ?? '';
+      return d.innerHTML;
+    }
+
+    function renderActivityCard(act, dayId, block, isNew) {
+      const enterClass = isNew ? ' activity-enter' : '';
+      const catOptions = CATEGORIES.map(c =>
+        `<option value="${c}" ${act.category === c ? 'selected' : ''}>${c}</option>`
+      ).join('');
+      return `
+        <div class="card activity-card${enterClass}"
+             data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+          <div class="activity-card-header">
+            <span class="drag-handle" draggable="true" data-action="noop"><i data-lucide="grip-vertical"></i></span>
+            <div class="activity-fields">
+              <input class="input" type="text" placeholder="Activity title"
+                     value="${escapeHtml(act.title)}"
+                     data-action="update-activity" data-field="title"
+                     data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+              <div class="activity-row">
+                <input class="input" type="text" placeholder="Location"
+                       value="${escapeHtml(act.location)}"
+                       data-action="update-activity" data-field="location"
+                       data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+                <select data-action="update-activity" data-field="category"
+                        data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+                  ${catOptions}
+                </select>
+              </div>
+              <span class="pill pill-${act.category}">${act.category}</span>
+              <textarea class="input" rows="2" placeholder="Notes"
+                        data-action="update-activity" data-field="notes"
+                        data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">${escapeHtml(act.notes)}</textarea>
+              <input class="input" type="url" placeholder="Optional link"
+                     value="${escapeHtml(act.link)}"
+                     data-action="update-activity" data-field="link"
+                     data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+            </div>
+            <button type="button" class="btn-icon" data-action="delete-activity"
+                    data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}"
+                    aria-label="Delete">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+          <div class="activity-row mobile-only" style="margin-top:0.5rem">
+            <button type="button" class="btn btn-ghost btn-sm" data-action="move-up"
+                    data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">↑</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-action="move-down"
+                    data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">↓</button>
+          </div>
+        </div>`;
+    }
+
+    function renderTimeBlocks(day) {
+      return BLOCKS.map(block => {
+        const activities = day.blocks[block] || [];
+        const listHtml = activities.length === 0
+          ? `<div class="empty-state" data-action="add-activity" data-day-id="${day.id}" data-block="${block}">
+               <i data-lucide="plus-circle" style="margin-bottom:0.5rem"></i>
+               <p>Add your first stop</p>
+             </div>`
+          : activities.map(act =>
+              renderActivityCard(act, day.id, block, appState.newActivityIds.has(act.id))
+            ).join('');
+        return `
+          <section class="time-block">
+            <div class="time-block-header">
+              <h3>${BLOCK_LABELS[block]}</h3>
+              <button type="button" class="btn btn-ghost btn-sm builder-desktop-only"
+                      data-action="add-activity" data-day-id="${day.id}" data-block="${block}">
+                <i data-lucide="plus"></i> Add
+              </button>
+            </div>
+            <div class="activity-list" data-day-id="${day.id}" data-block="${block}">
+              ${listHtml}
+            </div>
+          </section>`;
+      }).join('');
+    }
+
+    function renderHome() {
+      const samples = SAMPLE_TRIPS.map((t, i) => {
+        const grad = ['135deg, #01696f 0%, #0a3d40 50%, #171614 100%',
+          '135deg, #2d4a6f 0%, #1a2838 50%, #171614 100%',
+          '135deg, #6f4a2d 0%, #38281a 50%, #171614 100%'][i];
+        return `
+          <article class="card sample-card" data-action="load-sample" data-sample-index="${i}">
+            <div class="sample-thumb" style="background-image:url('${unsplashUrl(t.destination)}'), linear-gradient(${grad})"></div>
+            <div class="sample-body">
+              <h3>${escapeHtml(t.title)}</h3>
+              <p>${escapeHtml(formatDateRange(t.startDate, t.endDate))}</p>
+            </div>
+          </article>`;
+      }).join('');
+
+      return `
+        <div class="home">
+          <header class="top-bar">
+            <button type="button" class="brand" data-action="go-home">Navora</button>
+            <div class="theme-toggle">
+              <button type="button" class="btn-icon" data-action="toggle-theme" aria-label="Toggle theme">
+                <i data-lucide="${appState.theme === 'dark' ? 'sun' : 'moon'}"></i>
+              </button>
+            </div>
+          </header>
+          <section class="home-hero">
+            <h1 class="home-logo display">Navora</h1>
+            <p class="home-tagline">Plan gorgeous, shareable itineraries your friends will actually read.</p>
+            <form class="home-search" data-action="destination-submit">
+              <input class="input" type="text" name="destination" placeholder="Where are you going?" required>
+              <button type="submit" class="btn btn-primary">Go</button>
+            </form>
+            <button type="button" class="btn btn-primary" data-action="plan-blank">Plan a trip</button>
+          </section>
+          <section class="home-samples">
+            <h2>Inspiration</h2>
+            <div class="sample-grid">${samples}</div>
+          </section>
+        </div>`;
+    }
+
+    function renderBuilder() {
+      if (!appState.trip) {
+        appState.trip = createBlankTrip();
+        appState.activeDayId = appState.trip.days[0].id;
+      }
+      if (!appState.activeDayId && appState.trip.days[0]) {
+        appState.activeDayId = appState.trip.days[0].id;
+      }
+      const trip = appState.trip;
+      const day = getActiveDay();
+      if (!day) return renderHome();
+
+      const dayList = trip.days.map(d => `
+        <div class="day-item ${d.id === appState.activeDayId ? 'active' : ''}"
+             data-action="select-day" data-day-id="${d.id}">
+          <i data-lucide="calendar-days"></i>
+          <span>${escapeHtml(d.label)}</span>
+          ${trip.days.length > 1 ? `<button type="button" class="btn-icon" style="padding:0.2rem" data-action="remove-day" data-day-id="${d.id}" aria-label="Remove day"><i data-lucide="x"></i></button>` : ''}
+        </div>
+      `).join('');
+
+      const dayChips = trip.days.map(d => `
+        <button type="button" class="day-chip ${d.id === appState.activeDayId ? 'active' : ''}"
+                data-action="select-day" data-day-id="${d.id}">${escapeHtml(d.label)}</button>
+      `).join('');
+
+      const mainContent = renderTimeBlocks(day);
+      const isMobileDays = appState.mobileTab === 'days';
+      const isMobileMap = appState.mobileTab === 'map';
+      const isMobileShare = appState.mobileTab === 'share';
+
+      return `
+        <div class="builder">
+          <aside class="builder-sidebar builder-desktop-only">
+            <button type="button" class="brand" data-action="go-home" style="text-align:left;margin-bottom:0.5rem">← Navora</button>
+            <input class="trip-title-input" type="text" value="${escapeHtml(trip.title)}"
+                   data-action="update-trip" data-field="title" placeholder="Trip title">
+            <input class="input" type="text" value="${escapeHtml(trip.destination)}"
+                   data-action="update-trip" data-field="destination" placeholder="Destination">
+            <input class="input" type="text" value="${escapeHtml(trip.tagline)}"
+                   data-action="update-trip" data-field="tagline" placeholder="Tagline">
+            <div style="display:flex;gap:0.5rem">
+              <input class="input" type="date" value="${trip.startDate}"
+                     data-action="update-trip" data-field="startDate">
+              <input class="input" type="date" value="${trip.endDate}"
+                     data-action="update-trip" data-field="endDate">
+            </div>
+            <div class="day-list">${dayList}</div>
+            <button type="button" class="btn btn-ghost btn-sm" data-action="add-day">
+              <i data-lucide="plus"></i> Add day
+            </button>
+            <div class="sidebar-actions">
+              <button type="button" class="btn btn-primary" data-action="go-view">
+                <i data-lucide="share-2"></i> Preview Shareview
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" data-action="copy-share">Copy share link</button>
+              <div class="theme-toggle">
+                <button type="button" class="btn-icon" data-action="toggle-theme">
+                  <i data-lucide="${appState.theme === 'dark' ? 'sun' : 'moon'}"></i>
+                </button>
+                <span>${appState.theme === 'dark' ? 'Light' : 'Dark'} mode</span>
+              </div>
+            </div>
+          </aside>
+
+          <main class="builder-main">
+            <header class="top-bar mobile-only">
+              <button type="button" class="brand" data-action="go-home">Navora</button>
+              <button type="button" class="btn-icon" data-action="toggle-theme">
+                <i data-lucide="${appState.theme === 'dark' ? 'sun' : 'moon'}"></i>
+              </button>
+            </header>
+
+            <div class="mobile-panel ${isMobileDays ? 'active' : ''} mobile-only">
+              <div class="day-chips">${dayChips}</div>
+            </div>
+            <div class="mobile-panel ${isMobileMap ? 'active' : ''} mobile-only">
+              <div class="map-placeholder card" style="margin:1rem;border:none">
+                <i data-lucide="map" style="width:48px;height:48px;opacity:0.5"></i>
+                <h3>Map coming soon</h3>
+                <p>${escapeHtml(trip.destination || 'Set a destination in the builder')}</p>
+              </div>
+            </div>
+            <div class="mobile-panel ${isMobileShare ? 'active' : ''} mobile-only">
+              <div class="share-preview">
+                <p>Preview your shareable itinerary page.</p>
+                <button type="button" class="btn btn-primary" data-action="go-view">Open Shareview</button>
+                <button type="button" class="btn btn-ghost" data-action="copy-share">Copy share link</button>
+              </div>
+            </div>
+
+            <div class="builder-days-panel ${isMobileDays ? '' : 'mobile-hidden'}">
+              <div class="builder-header builder-desktop-only">
+                <div class="day-title-wrap">
+                  <h2 class="day-title">${escapeHtml(day.label)}</h2>
+                  <p class="day-meta">${day.date ? escapeHtml(new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })) : 'No date set'}</p>
+                </div>
+                <button type="button" class="btn btn-primary" data-action="go-view">Shareview</button>
+              </div>
+              <div class="builder-header-mobile mobile-only">
+                <h2 class="day-title">${escapeHtml(day.label)}</h2>
+                <p class="day-meta">${day.date ? escapeHtml(new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })) : ''}</p>
+              </div>
+              <div class="builder-days-content">${mainContent}</div>
+            </div>
+          </main>
+
+          <button type="button" class="fab-add mobile-only" data-action="fab-add" aria-label="Add activity">
+            <i data-lucide="plus"></i>
+          </button>
+
+          <nav class="mobile-tabs mobile-only">
+            <div class="mobile-tabs-inner">
+              <button type="button" class="mobile-tab ${appState.mobileTab === 'days' ? 'active' : ''}" data-action="mobile-tab" data-tab="days">
+                <i data-lucide="calendar"></i> Days
+              </button>
+              <button type="button" class="mobile-tab ${appState.mobileTab === 'map' ? 'active' : ''}" data-action="mobile-tab" data-tab="map">
+                <i data-lucide="map"></i> Map
+              </button>
+              <button type="button" class="mobile-tab ${appState.mobileTab === 'share' ? 'active' : ''}" data-action="mobile-tab" data-tab="share">
+                <i data-lucide="share-2"></i> Share
+              </button>
+            </div>
+          </nav>
+        </div>`;
+    }
+
+    function renderShareview() {
+      const trip = appState.trip;
+      if (!trip) {
+        return `
+          <div class="shareview">
+            <div class="share-toolbar">
+              <button type="button" class="brand" data-action="go-home">Navora</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-action="toggle-theme"><i data-lucide="${appState.theme === 'dark' ? 'sun' : 'moon'}"></i></button>
+            </div>
+            <div class="share-body" style="text-align:center;padding:4rem 1rem">
+              <p style="color:var(--text-muted)">No trip planned yet.</p>
+              <button type="button" class="btn btn-primary" data-action="plan-blank" style="margin-top:1rem">Plan a trip</button>
+            </div>
+          </div>`;
+      }
+
+      const heroStyle = trip.destination
+        ? `background-image:url('${unsplashUrl(trip.destination)}')`
+        : '';
+      const heroClass = trip.destination ? 'share-hero' : 'share-hero share-hero-fallback';
+
+      let timelineHtml = '';
+      for (const day of trip.days) {
+        let dayItems = '';
+        for (const block of BLOCKS) {
+          const acts = (day.blocks[block] || []).filter(a => a.title || a.location);
+          if (acts.length === 0) continue;
+          dayItems += `<p class="timeline-block-label">${BLOCK_LABELS[block]}</p>`;
+          for (const act of acts) {
+            const icon = CAT_ICONS[act.category] || 'map-pin';
+            const linkHtml = act.link
+              ? `<a href="${escapeHtml(act.link)}" target="_blank" rel="noopener">Visit link →</a>`
+              : '';
+            dayItems += `
+              <div class="timeline-item">
+                <div class="timeline-icon timeline-icon-${act.category}">
+                  <i data-lucide="${icon}"></i>
+                </div>
+                <h4>${escapeHtml(act.title || 'Untitled')}</h4>
+                ${act.location ? `<p class="loc">${escapeHtml(act.location)}</p>` : ''}
+                ${act.notes ? `<p class="notes">${escapeHtml(act.notes)}</p>` : ''}
+                ${linkHtml}
+              </div>`;
+          }
+        }
+        if (dayItems) {
+          timelineHtml += `
+            <section class="timeline-day">
+              <h2 class="timeline-day-label">${escapeHtml(day.label)}${day.date ? ` · ${escapeHtml(new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}` : ''}</h2>
+              <div class="timeline">${dayItems}</div>
+            </section>`;
+        }
+      }
+
+      if (!timelineHtml) {
+        timelineHtml = '<p style="color:var(--text-muted);text-align:center">Add activities in the builder to see your timeline.</p>';
+      }
+
+      return `
+        <div class="shareview">
+          <div class="share-toolbar">
+            <button type="button" class="brand" data-action="go-plan">← Edit</button>
+            <div style="display:flex;gap:0.5rem">
+              <button type="button" class="btn btn-ghost btn-sm" data-action="copy-share"><i data-lucide="link"></i> Copy link</button>
+              <button type="button" class="btn-icon" data-action="toggle-theme"><i data-lucide="${appState.theme === 'dark' ? 'sun' : 'moon'}"></i></button>
+            </div>
+          </div>
+          <div class="${heroClass}" style="${heroStyle}">
+            <div class="share-hero-overlay"></div>
+            <div class="share-hero-content">
+              <h1>${escapeHtml(trip.title)}</h1>
+              <p class="dates">${escapeHtml(formatDateRange(trip.startDate, trip.endDate))}</p>
+              ${trip.tagline ? `<p class="tagline">${escapeHtml(trip.tagline)}</p>` : ''}
+            </div>
+          </div>
+          <div class="share-body">${timelineHtml}</div>
+          <footer class="share-footer">
+            <p>Made with Navora</p>
+            <button type="button" class="btn btn-primary" data-action="plan-own">Plan your own</button>
+          </footer>
+        </div>`;
+    }
+
+    function render() {
+      document.documentElement.dataset.theme = appState.theme;
+      const route = getRoute();
+      const app = document.getElementById('app');
+
+      if (route === 'plan' && !appState.trip) {
+        appState.trip = createBlankTrip();
+        appState.activeDayId = appState.trip.days[0].id;
+      }
+
+      if (route === 'home') {
+        app.innerHTML = renderHome();
+      } else if (route === 'plan') {
+        app.innerHTML = renderBuilder();
+      } else if (route === 'view') {
+        app.innerHTML = renderShareview();
+      }
+
+      appState.newActivityIds.clear();
+      lucide.createIcons();
+      bindDragDrop();
+    }
+
+    let dragState = null;
+
+    function bindDragDrop() {
+      document.querySelectorAll('.drag-handle').forEach(handle => {
+        handle.addEventListener('dragstart', e => {
+          const card = handle.closest('.activity-card');
+          if (!card) return;
+          dragState = {
+            dayId: card.dataset.dayId,
+            block: card.dataset.block,
+            actId: card.dataset.actId
+          };
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', card.dataset.actId);
+          const list = card.parentElement;
+          dragState.fromIndex = [...list.querySelectorAll('.activity-card')].indexOf(card);
+        });
+        handle.addEventListener('dragend', () => {
+          const card = handle.closest('.activity-card');
+          if (card) card.classList.remove('dragging');
+          document.querySelectorAll('.activity-list.drag-over').forEach(el => el.classList.remove('drag-over'));
+          dragState = null;
+        });
+      });
+
+      document.querySelectorAll('.activity-list').forEach(list => {
+        list.addEventListener('dragover', e => {
+          if (!dragState) return;
+          if (list.dataset.dayId !== dragState.dayId || list.dataset.block !== dragState.block) return;
+          e.preventDefault();
+          list.classList.add('drag-over');
+          const cards = [...list.querySelectorAll('.activity-card:not(.dragging)')];
+          const after = getDragAfterElement(list, e.clientY);
+          const dragging = document.querySelector('.activity-card.dragging');
+          if (after == null) list.appendChild(dragging);
+          else list.insertBefore(dragging, after);
+        });
+        list.addEventListener('dragleave', e => {
+          if (!list.contains(e.relatedTarget)) list.classList.remove('drag-over');
+        });
+        list.addEventListener('drop', e => {
+          e.preventDefault();
+          list.classList.remove('drag-over');
+          if (!dragState) return;
+          const cards = [...list.querySelectorAll('.activity-card')];
+          const toIndex = cards.findIndex(c => c.dataset.actId === dragState.actId);
+          if (toIndex >= 0 && dragState.fromIndex !== toIndex) {
+            reorderActivity(dragState.dayId, dragState.block, dragState.fromIndex, toIndex);
+          }
+        });
+      });
+    }
+
+    function getDragAfterElement(container, y) {
+      const els = [...container.querySelectorAll('.activity-card:not(.dragging)')];
+      return els.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset, element: child };
+        return closest;
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function handleAction(e) {
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
+      const action = el.dataset.action;
+
+      if (action === 'noop') {
+        e.preventDefault();
+        return;
+      }
+
+      if (action === 'destination-submit') {
+        e.preventDefault();
+        const dest = el.querySelector('[name=destination]')?.value?.trim();
+        if (dest) {
+          loadTrip(createBlankTrip(dest));
+          appState.trip.destination = dest;
+          appState.trip.title = `Trip to ${dest.split(',')[0]}`;
+          navigate('plan');
+          render();
+        }
+        return;
+      }
+
+      if (action === 'plan-blank') {
+        appState.trip = createBlankTrip();
+        appState.activeDayId = appState.trip.days[0].id;
+        navigate('plan');
+        render();
+        return;
+      }
+
+      if (action === 'plan-own') {
+        appState.trip = null;
+        appState.activeDayId = null;
+        navigate('');
+        render();
+        return;
+      }
+
+      if (action === 'load-sample') {
+        loadTrip(SAMPLE_TRIPS[parseInt(el.dataset.sampleIndex, 10)]);
+        navigate('plan');
+        render();
+        return;
+      }
+
+      if (action === 'go-home') {
+        navigate('');
+        render();
+        return;
+      }
+
+      if (action === 'go-plan') {
+        navigate('plan');
+        render();
+        return;
+      }
+
+      if (action === 'go-view') {
+        navigate('view');
+        render();
+        return;
+      }
+
+      if (action === 'toggle-theme') {
+        toggleTheme();
+        return;
+      }
+
+      if (action === 'copy-share') {
+        copyShareLink();
+        return;
+      }
+
+      if (action === 'select-day') {
+        if (e.target.closest('[data-action=remove-day]')) return;
+        setActiveDay(el.dataset.dayId);
+        return;
+      }
+
+      if (action === 'add-day') {
+        addDay();
+        return;
+      }
+
+      if (action === 'remove-day') {
+        e.stopPropagation();
+        removeDay(el.dataset.dayId);
+        return;
+      }
+
+      if (action === 'add-activity') {
+        addActivity(el.dataset.dayId, el.dataset.block);
+        return;
+      }
+
+      if (action === 'delete-activity') {
+        deleteActivity(el.dataset.dayId, el.dataset.block, el.dataset.actId);
+        return;
+      }
+
+      if (action === 'mobile-tab') {
+        appState.mobileTab = el.dataset.tab;
+        render();
+        return;
+      }
+
+      if (action === 'fab-add') {
+        const day = getActiveDay();
+        if (day) addActivity(day.id, 'morning');
+        return;
+      }
+
+      if (action === 'move-up' || action === 'move-down') {
+        const { dayId, block, actId } = el.dataset;
+        const list = appState.trip?.days.find(d => d.id === dayId)?.blocks[block];
+        if (!list) return;
+        const idx = list.findIndex(a => a.id === actId);
+        const newIdx = action === 'move-up' ? idx - 1 : idx + 1;
+        if (newIdx >= 0 && newIdx < list.length) reorderActivity(dayId, block, idx, newIdx);
+        return;
+      }
+    }
+
+    function handleInput(e) {
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
+
+      if (el.dataset.action === 'update-trip') {
+        if (appState.trip) appState.trip[el.dataset.field] = el.value;
+        return;
+      }
+
+      if (el.dataset.action === 'update-activity') {
+        updateActivity(el.dataset.dayId, el.dataset.block, el.dataset.actId, el.dataset.field, el.value);
+        if (el.dataset.field === 'category') render();
+      }
+    }
+
+    document.getElementById('app').addEventListener('click', handleAction);
+    document.getElementById('app').addEventListener('submit', handleAction);
+    document.getElementById('app').addEventListener('input', handleInput);
+    document.getElementById('app').addEventListener('change', handleInput);
+
+    window.addEventListener('hashchange', () => {
+      if (getRoute() === 'plan' && appState.trip && !appState.activeDayId) {
+        appState.activeDayId = appState.trip.days[0]?.id;
+      }
+      render();
+    });
+
+    document.documentElement.dataset.theme = appState.theme;
+    render();
+  </script>
+</body>
+</html>
