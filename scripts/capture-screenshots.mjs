@@ -26,6 +26,11 @@ async function shot(name, opts = {}) {
 // Desktop
 await page.setViewportSize({ width: 1280, height: 800 });
 await page.goto(base, { waitUntil: 'networkidle' });
+await page.evaluate(() => {
+  localStorage.setItem('navora-seen-hint', '1');
+  localStorage.setItem('navora-seen-share-tip', '1');
+});
+await page.reload({ waitUntil: 'networkidle' });
 await page.waitForTimeout(800);
 await shot('home.png');
 

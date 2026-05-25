@@ -33,10 +33,36 @@ export function heroImageUrl(destination) {
   return `https://picsum.photos/seed/${seed}/1600/900`;
 }
 
+export function formatRelativeTime(ts) {
+  if (!ts) return '';
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 10) return 'just now';
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  return new Date(ts).toLocaleDateString();
+}
+
+export function countGeocodedStops(trip) {
+  if (!trip) return 0;
+  let n = 0;
+  for (const day of trip.days) {
+    for (const block of ['morning', 'afternoon', 'evening']) {
+      for (const a of day.blocks[block] || []) {
+        if (a.lat != null && a.lng != null) n++;
+      }
+    }
+  }
+  return n;
+}
+
 export function showToast(msg) {
   const el = document.getElementById('toast');
   if (!el) return;
   el.textContent = msg;
+  el.setAttribute('aria-live', 'polite');
   el.classList.add('show');
   clearTimeout(showToast._t);
   showToast._t = setTimeout(() => el.classList.remove('show'), 2500);

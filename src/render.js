@@ -17,7 +17,11 @@ import { encodeTripPayload } from './share-url.js';
 import {
   reorderActivity
 } from './trip-ops.js';
-import { showPresenceOnActivity, clearPresenceBadges, refreshSidebarPanels } from './partial.js';
+import {
+  showPresenceOnActivity, clearPresenceBadges, refreshSidebarPanels
+} from './partial.js';
+import { hasSeenHomeHint, hasSeenShareTip } from './prefs.js';
+import { countGeocodedStops } from './utils.js';
 
 let dragState = null;
 let weatherDays = null;
@@ -34,8 +38,14 @@ export function renderActivityCard(act, dayId, block, isNew) {
     `<option value="${c}" ${act.category === c ? 'selected' : ''}>${c}</option>`
   ).join('');
   const imgUrl = resolveActivityImage(act, appState.trip?.destination);
+  const collapsed = appState.collapsedActivities.has(act.id);
+  const geo = appState.geocodeStatus[act.id];
+  const geoLabel = geo === 'pending' ? 'Finding on map…'
+    : geo === 'fail' ? 'Not found'
+    : (act.lat != null && act.lng != null) ? 'On map' : '';
+  const geoState = geo || (act.lat != null ? 'ok' : '');
   return `
-    <div class="card activity-card${enterClass}" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+    <div class="card activity-card${enterClass}${collapsed ? ' is-collapsed' : ''}" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
       <div class="activity-card-header">
         <span class="drag-handle" draggable="true" data-action="noop" aria-label="Drag to reorder"><i data-lucide="grip-vertical"></i></span>
         <div class="activity-photo-wrap">
@@ -44,8 +54,13 @@ export function renderActivityCard(act, dayId, block, isNew) {
                   data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">Find photo</button>
         </div>
         <div class="activity-fields">
-          <input class="input" type="text" placeholder="Activity title" value="${escapeHtml(act.title)}"
-                 data-action="update-activity" data-field="title" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+          <div class="activity-title-row">
+            <input class="input" type="text" placeholder="Activity title" value="${escapeHtml(act.title)}"
+                   data-action="update-activity" data-field="title" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+            <button type="button" class="btn-icon btn-icon-sm" data-action="toggle-collapse" data-act-id="${act.id}" aria-label="${collapsed ? 'Expand' : 'Collapse'}">
+              <i data-lucide="${collapsed ? 'chevron-down' : 'chevron-up'}"></i>
+            </button>
+          </div>
           <div class="activity-row">
             <input class="input" type="text" placeholder="Location" value="${escapeHtml(act.location)}"
                    data-action="update-activity" data-field="location" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}"
@@ -54,23 +69,30 @@ export function renderActivityCard(act, dayId, block, isNew) {
               ${catOptions}
             </select>
           </div>
-          <div class="time-row">
-            <input type="time" value="${act.timeStart || ''}" title="Start" aria-label="Start time"
-                   data-action="update-activity" data-field="timeStart" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
-            <span style="color:var(--text-muted);font-size:0.8rem">–</span>
-            <input type="time" value="${act.timeEnd || ''}" title="End" aria-label="End time"
-                   data-action="update-activity" data-field="timeEnd" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+          ${geoLabel ? `<span class="geocode-status" data-state="${geoState}">${geoLabel}</span>` : '<span class="geocode-status"></span>'}
+          <div class="activity-card-details">
+            <div class="time-row">
+              <input type="time" value="${act.timeStart || ''}" title="Start" aria-label="Start time"
+                     data-action="update-activity" data-field="timeStart" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+              <span style="color:var(--text-muted);font-size:0.8rem">–</span>
+              <input type="time" value="${act.timeEnd || ''}" title="End" aria-label="End time"
+                     data-action="update-activity" data-field="timeEnd" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
+            </div>
+            <span class="pill pill-${act.category}">${act.category}</span>
+            <textarea class="input" rows="2" placeholder="Notes" data-action="update-activity" data-field="notes"
+                      data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">${escapeHtml(act.notes)}</textarea>
+            <input class="input" type="url" placeholder="Optional link" value="${escapeHtml(act.link)}"
+                   data-action="update-activity" data-field="link" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
           </div>
-          <span class="pill pill-${act.category}">${act.category}</span>
-          ${act.lat != null ? '<span style="font-size:0.7rem;color:var(--accent)">on map</span>' : ''}
-          <textarea class="input" rows="2" placeholder="Notes" data-action="update-activity" data-field="notes"
-                    data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">${escapeHtml(act.notes)}</textarea>
-          <input class="input" type="url" placeholder="Optional link" value="${escapeHtml(act.link)}"
-                 data-action="update-activity" data-field="link" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}">
         </div>
-        <button type="button" class="btn-icon" data-action="delete-activity" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}" aria-label="Delete activity">
-          <i data-lucide="trash-2"></i>
-        </button>
+        <div class="activity-card-actions">
+          <button type="button" class="btn-icon" data-action="duplicate-activity" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}" aria-label="Duplicate activity">
+            <i data-lucide="copy"></i>
+          </button>
+          <button type="button" class="btn-icon" data-action="delete-activity" data-day-id="${dayId}" data-block="${block}" data-act-id="${act.id}" aria-label="Delete activity">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
         ${presence}
       </div>
       <div class="activity-row mobile-only" style="margin-top:0.5rem">
@@ -113,8 +135,11 @@ export function renderHome() {
     ][i];
     const dayCount = t.days.length;
     return `
-      <article class="card sample-card" data-action="load-sample" data-sample-index="${i}">
+      <article class="card sample-card" data-action="load-sample" data-sample-index="${i}"
+               aria-label="Open ${escapeHtml(t.title)} sample trip" aria-describedby="sample-desc-${i}">
+        <p id="sample-desc-${i}" class="visually-hidden">Opens a ${dayCount}-day sample itinerary for ${escapeHtml(t.destination)}. Hover the card to reveal Open sample.</p>
         <div class="sample-thumb" style="background-image:url('${getDestinationImage(t.destination)}'), linear-gradient(${grad})">
+          <span class="sample-open-label" aria-hidden="true">Open sample</span>
           <div class="sample-thumb-overlay">
             <span class="sample-dest">${escapeHtml(t.destination)}</span>
             <span class="sample-meta">${dayCount} day${dayCount === 1 ? '' : 's'}</span>
@@ -127,8 +152,16 @@ export function renderHome() {
       </article>`;
   }).join('');
 
+  const homeHint = !hasSeenHomeHint() ? `
+    <div class="home-hint-banner" role="status">
+      <p><strong>New here?</strong> Try the Tokyo sample, then open <strong>Preview Shareview</strong> to see what friends receive.</p>
+      <button type="button" class="btn btn-ghost btn-sm" data-action="dismiss-home-hint">Dismiss</button>
+      <button type="button" class="btn btn-primary btn-sm" data-action="load-sample" data-sample-index="0">Try Tokyo</button>
+    </div>` : '';
+
   return `
     <div class="home">
+      ${homeHint}
       <header class="top-bar">
         <button type="button" class="brand" data-action="go-home">Navora</button>
         <button type="button" class="btn-icon" data-action="toggle-theme" aria-label="Toggle theme">
@@ -157,6 +190,18 @@ export function renderHome() {
         <div class="sample-grid">${samples}</div>
       </section>
     </div>`;
+}
+
+function renderBuilderWeatherHtml() {
+  const trip = appState.trip;
+  const hasDates = trip?.days.some(d => d.date);
+  if (!weatherDays?.length) {
+    if (!hasDates) {
+      return `<p class="weather-nudge">Add dates to each day for a forecast. <button type="button" class="btn-link-inline" data-action="focus-day-date">Set date</button></p>`;
+    }
+    return '<p style="font-size:0.8rem;color:var(--text-muted)">Forecast unavailable.</p>';
+  }
+  return renderWeatherStrip(weatherDays, trip.days);
 }
 
 function loadDraftBanner() {
@@ -214,6 +259,7 @@ export function renderBuilder() {
     <div class="builder">
       <aside class="builder-sidebar builder-desktop-only">
         <button type="button" class="brand" data-action="go-home" style="text-align:left;margin-bottom:0.5rem">← Navora</button>
+        <p class="draft-status" data-partial="draft-status">Saved locally</p>
         <input class="trip-title-input" type="text" value="${escapeHtml(trip.title)}" data-action="update-trip" data-field="title" placeholder="Trip title" aria-label="Trip title">
         ${tripMeta ? `<p class="trip-meta-line">${escapeHtml(tripMeta)}</p>` : ''}
         <input class="input" type="text" value="${escapeHtml(trip.destination)}" data-action="update-trip" data-field="destination" placeholder="Destination" aria-label="Destination">
@@ -245,7 +291,7 @@ export function renderBuilder() {
         </div>
         <div class="sidebar-section" data-partial="weather">
           <h4>Weather</h4>
-          ${weatherDays ? renderWeatherStrip(weatherDays, trip.days) : '<p style="font-size:0.8rem;color:var(--text-muted)">Set day dates for forecast.</p>'}
+          <div data-partial="weather-inner">${renderBuilderWeatherHtml()}</div>
         </div>
         <div class="sidebar-section">
           <h4>Shareview mood</h4>
@@ -274,8 +320,10 @@ export function renderBuilder() {
           </div>
         </div>
         <div class="sidebar-actions">
+          ${!hasSeenShareTip() && trip.days.some(d => BLOCKS.some(b => (d.blocks[b] || []).some(a => a.title))) ? `
+            <p class="share-tip">Tip: Use <strong>Preview Shareview</strong> to see the trip as guests will.</p>` : ''}
           <button type="button" class="btn btn-primary" data-action="go-view"><i data-lucide="share-2"></i> Preview Shareview</button>
-          <button type="button" class="btn btn-ghost btn-sm" data-action="copy-share">Copy share link</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-action="copy-share" data-copy-btn><span data-copy-label>Copy share link</span></button>
           <button type="button" class="btn btn-ghost btn-sm" data-action="print-view">Print itinerary</button>
           <button type="button" class="btn-icon" data-action="toggle-theme" aria-label="Toggle theme"><i data-lucide="${appState.theme === 'dark' ? 'sun' : 'moon'}"></i></button>
         </div>
@@ -310,11 +358,19 @@ export function renderBuilder() {
           <div class="map-wrap builder-desktop-only" style="margin-bottom:1.25rem;height:220px">
             <div id="map-leaflet" style="height:100%"></div>
           </div>
-          ${geocodeStatus}
+          ${appState.geocoding ? '<p class="geocode-spinner loading-pulse">Geocoding…</p>' : geocodeStatus}
           <div class="builder-days-content">${renderTimeBlocks(day)}</div>
         </div>
       </main>
-      <button type="button" class="fab-add mobile-only" data-action="fab-add" aria-label="Add activity"><i data-lucide="plus"></i></button>
+      <div class="fab-wrap mobile-only">
+        ${appState.fabMenuOpen ? `
+          <div class="fab-menu" role="menu">
+            <button type="button" data-action="fab-pick-block" data-block="morning">Morning</button>
+            <button type="button" data-action="fab-pick-block" data-block="afternoon">Afternoon</button>
+            <button type="button" data-action="fab-pick-block" data-block="evening">Evening</button>
+          </div>` : ''}
+        <button type="button" class="fab-add" data-action="fab-toggle" aria-label="Add activity" aria-expanded="${appState.fabMenuOpen}"><i data-lucide="plus"></i></button>
+      </div>
       <nav class="mobile-tabs mobile-only">
         <div class="mobile-tabs-inner">
           <button type="button" class="mobile-tab ${appState.mobileTab === 'days' ? 'active' : ''}" data-action="mobile-tab" data-tab="days"><i data-lucide="calendar"></i> Days</button>
@@ -346,13 +402,16 @@ export function renderShareview() {
   const heroClass = trip.destination ? 'share-hero' : 'share-hero share-hero-fallback';
   const timelineHtml = buildTimelineHtml(trip);
   const weatherHtml = weatherDays ? renderWeatherStrip(weatherDays, trip.days) : '';
+  const dayJumps = trip.days.map(d => `
+    <button type="button" class="share-day-jump" data-action="jump-share-day" data-day-id="${d.id}">${escapeHtml(d.label)}</button>
+  `).join('');
 
   return `
-    <div class="shareview${embed ? ' embed-mode' : ''}" ${mood ? `data-share-mood="${mood}"` : ''}>
+    <div class="shareview${embed ? ' embed-mode' : ''}" ${mood ? `data-share-mood="${mood}"` : ''}">
       <div class="share-toolbar">
         <button type="button" class="brand" data-action="go-plan">← Edit</button>
         <div class="toolbar-row">
-          <button type="button" class="btn btn-ghost btn-sm" data-action="copy-share"><i data-lucide="link"></i> Copy link</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-action="copy-share" data-copy-btn><i data-lucide="link"></i> <span data-copy-label>Copy link</span></button>
           <button type="button" class="btn btn-ghost btn-sm" data-action="export-card"><i data-lucide="image"></i> Card</button>
           <button type="button" class="btn btn-ghost btn-sm" data-action="export-ics"><i data-lucide="calendar"></i> ICS</button>
           <button type="button" class="btn btn-ghost btn-sm" data-action="print-view"><i data-lucide="printer"></i> Print</button>
@@ -368,6 +427,7 @@ export function renderShareview() {
           ${trip.tagline ? `<p class="tagline">${escapeHtml(trip.tagline)}</p>` : ''}
         </div>
       </div>
+      ${trip.days.length > 1 ? `<nav class="share-day-jumps" aria-label="Jump to day">${dayJumps}</nav>` : ''}
       <div class="share-body">
         ${weatherHtml}
         <div class="share-map-panel card" style="padding:0 1rem 1rem;margin-bottom:1.5rem">
@@ -386,6 +446,7 @@ export function renderShareview() {
 }
 
 export function bindDragDrop() {
+  window.__navoraBindDrag = bindDragDrop;
   document.querySelectorAll('.drag-handle').forEach(handle => {
     handle.addEventListener('dragstart', e => {
       const card = handle.closest('.activity-card');
@@ -476,6 +537,9 @@ export function renderApp(options = { full: true }) {
     createIcons();
     bindDragDrop();
     afterRender(route);
+    if (typeof window.__navoraUpdateDraftIndicator === 'function') {
+      window.__navoraUpdateDraftIndicator();
+    }
   } else {
     refreshSidebarPanels(weatherDays);
   }

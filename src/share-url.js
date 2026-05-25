@@ -3,15 +3,27 @@ import { MAX_URL_CHARS } from './constants.js';
 import { appState, normalizeTrip } from './state.js';
 import { enrichTripImages } from './images.js';
 
-export function encodeTripPayload() {
+function buildPayloadString() {
   if (!appState.trip) return '';
-  const payload = JSON.stringify({
+  return JSON.stringify({
     t: appState.trip,
     th: appState.theme,
     sm: appState.trip.shareMood
   });
+}
+
+export function getSharePayloadLength() {
+  const payload = buildPayloadString();
+  if (!payload) return 0;
   const encoded = LZString.compressToEncodedURIComponent(payload);
-  if (encoded.length > MAX_URL_CHARS) return null;
+  return encoded ? encoded.length : Infinity;
+}
+
+export function encodeTripPayload() {
+  const payload = buildPayloadString();
+  if (!payload) return '';
+  const encoded = LZString.compressToEncodedURIComponent(payload);
+  if (!encoded || encoded.length > MAX_URL_CHARS) return null;
   return encoded;
 }
 

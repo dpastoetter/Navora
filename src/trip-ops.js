@@ -118,8 +118,25 @@ export function deleteActivity(dayId, block, actId) {
   const day = appState.trip?.days.find(d => d.id === dayId);
   if (!day) return;
   day.blocks[block] = day.blocks[block].filter(a => a.id !== actId);
+  appState.collapsedActivities.delete(actId);
+  delete appState.geocodeStatus[actId];
   scheduleBroadcast();
   scheduleSaveDraft();
+}
+
+export function duplicateActivity(dayId, block, actId) {
+  const day = appState.trip?.days.find(d => d.id === dayId);
+  const src = day?.blocks[block]?.find(a => a.id === actId);
+  if (!src) return null;
+  pushUndo('duplicate');
+  const newId = uid();
+  const copy = normalizeActivity({ ...src, id: newId, title: src.title ? `${src.title} (copy)` : '' });
+  const idx = day.blocks[block].findIndex(a => a.id === actId);
+  day.blocks[block].splice(idx + 1, 0, copy);
+  appState.newActivityIds.add(newId);
+  scheduleBroadcast();
+  scheduleSaveDraft();
+  return newId;
 }
 
 export function reorderActivity(dayId, block, fromIndex, toIndex) {

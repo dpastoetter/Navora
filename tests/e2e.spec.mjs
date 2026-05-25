@@ -50,10 +50,27 @@ test.describe('Navora E2E', () => {
     const before = await page.locator('.activity-card').count();
     await page.locator('[data-action=add-activity]').first().click();
     await expect(page.locator('.activity-card')).toHaveCount(before + 1);
+    page.once('dialog', dialog => dialog.accept());
     await page.locator('[data-action=delete-activity]').first().click();
     await expect(page.locator('.activity-card')).toHaveCount(before);
     await page.locator('[data-action=undo]').click();
     await expect(page.locator('.activity-card')).toHaveCount(before + 1);
+  });
+
+  test('delete activity can be cancelled', async ({ page }) => {
+    await page.click('[data-action=load-sample][data-sample-index="2"]');
+    const before = await page.locator('.activity-card').count();
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.locator('[data-action=delete-activity]').first().click();
+    await expect(page.locator('.activity-card')).toHaveCount(before);
+  });
+
+  test('shortcuts modal opens with ?', async ({ page }) => {
+    await page.keyboard.press('?');
+    await expect(page.locator('#modal-root .modal')).toBeVisible();
+    await expect(page.locator('#modal-title')).toContainText(/keyboard shortcuts/i);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#modal-root')).toBeHidden();
   });
 
   test('day template applies to active day', async ({ page }) => {

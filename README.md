@@ -6,23 +6,23 @@ A travel planning tool that builds gorgeous, shareable itinerary pages. Built wi
 
 ## Screenshots
 
-Captured from the production build (`npm run build && npm run preview`, then `npm run screenshots`).
+Captured from the production build (`npm run build && npm run preview`, then `npm run screenshots`). The capture script dismisses the first-visit hint so home shots stay clean.
 
 ### Home
 
-Centered hero with Share / Map / Weather highlights, destination search, and sample trips with photo overlays.
+Centered hero with Share / Map / Weather highlights, destination search, and sample trips with photo overlays and “Open sample” affordances.
 
 ![Navora home — hero, feature strip, and sample trip cards with destination photos](docs/screenshots/home.png)
 
 ### Builder
 
-Tokyo sample with larger activity photos, block icons, trip meta, day progress, and sidebar panels.
+Tokyo sample with activity photos, collapsible cards, geocode status, route map, autosave indicator, and sidebar insights / weather / packing.
 
 ![Navora builder — activity cards with photos, map, and insights sidebar](docs/screenshots/builder.png)
 
 ### Shareview
 
-Share link view with destination hero, weather cards, route map, and timeline with sight photos.
+Share link view with destination hero, day-jump chips, weather strip, route map, and photo timeline.
 
 ![Navora Shareview — hero, weather strip, and photo timeline](docs/screenshots/shareview.png)
 
@@ -40,20 +40,23 @@ npm run screenshots
 
 ## Features
 
-- **Multi-day trip builder** — Morning, afternoon, and evening blocks
-- **Shareable URLs** — Compressed trip in `#view?d=…` (LZ-String)
-- **Shareview** — Hero, timeline, route map, weather strip, mood themes
+- **Multi-day trip builder** — Morning, afternoon, and evening blocks; duplicate activities; collapse cards for quicker scanning
+- **Draft autosave** — LocalStorage draft with a “Saved locally” timestamp in the sidebar
+- **Shareable URLs** — Compressed trip in `#view?d=…` (LZ-String); size check with JSON export fallback when the link is too large
+- **Shareview** — Hero, sticky day headers, jump-to-day chips, timeline, route map (auto-opens with 2+ geocoded stops), weather strip, mood themes
 - **Story card PNG** — Social-ready export
 - **ICS calendar export** — Timed activities → `.ics`
 - **Print stylesheet** — Clean itinerary printout
 - **Day templates & smart insights** — Templates + warnings with quick-fix actions
-- **Interactive map** — Geocoded pins + route polyline (Leaflet / OSM)
-- **Open-Meteo weather** — Forecast strip when days have dates
+- **Interactive map** — Geocoded pins + route polyline; inline location status (pending / on map / not found)
+- **Open-Meteo weather** — Forecast strip when days have dates; nudge to set dates when missing
 - **Packing list** — Auto-suggestions from activity categories
 - **Trip tools** — JSON import/export, duplicate, undo, localStorage draft
+- **Preferences** — Theme and share-map open state remembered across visits
 - **Live sync** — PeerJS room codes for co-editing
 - **Embed mode** — `#view?d=…&embed=1` for minimal chrome
 - **City & sight photos** — Curated Wikimedia images for sample trips; auto/Wikipedia lookup for custom stops
+- **Mobile** — Tabbed days / map / share; FAB adds to morning, afternoon, or evening
 
 ## Development
 
@@ -75,14 +78,18 @@ Open without npm: serve `dist/` after build, or see [`index.legacy.html`](index.
 | `#plan` | Builder |
 | `#view` | Shareview |
 
-## Keyboard shortcuts (builder)
+## Keyboard shortcuts
+
+Press `?` anywhere (outside inputs) for the in-app shortcuts panel.
 
 | Key | Action |
 |-----|--------|
-| `n` | New activity (morning) |
-| `1`–`9` | Switch day |
+| `?` | Open shortcuts help |
+| `n` | New activity (last block used; default morning) |
+| `1`–`9` | Switch day (builder) |
 | `/` | Focus destination (home) |
-| `Ctrl/Cmd+Z` | Undo |
+| `Ctrl/Cmd+Z` | Undo (builder) |
+| `Esc` | Close dialog or mobile FAB menu |
 
 ## Project structure
 
@@ -92,8 +99,13 @@ Navora/
 ├── src/
 │   ├── main.js
 │   ├── styles/main.css
+│   ├── actions.js    # UI events, share copy, shortcuts
+│   ├── render.js     # Home / builder / shareview
+│   ├── partial.js    # Sidebar & card DOM updates without full re-render
+│   ├── prefs.js      # Theme, map, onboarding flags
 │   └── …modules
-├── public/
+├── public/images/      # Bundled destination & sight photos
+├── docs/screenshots/ # README captures (npm run screenshots)
 ├── dist/               # GitHub Pages artifact
 ├── index.legacy.html   # Original monolith
 └── package.json

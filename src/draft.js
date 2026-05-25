@@ -17,7 +17,12 @@ export function saveDraft() {
 
 export function scheduleSaveDraft() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveDraft, 500);
+  saveTimer = setTimeout(() => {
+    saveDraft();
+    if (typeof window.__navoraUpdateDraftIndicator === 'function') {
+      window.__navoraUpdateDraftIndicator();
+    }
+  }, 500);
 }
 
 export function loadDraft() {

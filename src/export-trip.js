@@ -147,7 +147,7 @@ export function buildTimelineHtml(trip) {
     }
     if (dayItems) {
       html += `
-        <section class="timeline-day">
+        <section class="timeline-day" id="share-day-${day.id}">
           <h2 class="timeline-day-label">${escapeHtml(day.label)}${day.date ? ` · ${escapeHtml(new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}` : ''}</h2>
           <div class="timeline">${dayItems}</div>
         </section>`;
