@@ -1,56 +1,107 @@
 # Navora
 
-A single-file travel planning tool that builds gorgeous, shareable itinerary pages. No frameworks, no build step — open [`index.html`](index.html) in any modern browser.
+A travel planning tool that builds gorgeous, shareable itinerary pages. Built with Vite — deploy to GitHub Pages or run locally.
+
+**[Try Navora live](https://dpastoetter.github.io/Navora/)**
+
+## Screenshots
+
+### Home
+
+Plan a trip, pick a destination, or start from a sample itinerary.
+
+![Navora home screen — hero, destination search, and sample trips](docs/screenshots/home.png)
+
+### Builder
+
+Edit days with morning / afternoon / evening blocks, photos, maps, templates, and packing lists.
+
+![Navora builder — Tokyo sample trip with activity cards and sidebar](docs/screenshots/builder.png)
+
+### Shareview
+
+Shareable read-only itinerary with hero image, weather, route map, and photo timeline.
+
+![Navora Shareview — Tokyo trip timeline and trip header](docs/screenshots/shareview.png)
+
+### Mobile
+
+![Navora home on mobile](docs/screenshots/home-mobile.png)
+
+To regenerate screenshots after UI changes:
+
+```bash
+npm run build && npm run preview
+# in another terminal:
+npm run screenshots
+```
 
 ## Features
 
-- **Multi-day trip builder** — Morning, afternoon, and evening time blocks per day
-- **Rich activities** — Title, location, notes, category tags (food, culture, nature, transport, stay), optional links
-- **Shareview** — Read-only public-style itinerary with hero image, vertical timeline, and category-colored icons
-- **Trip cover** — Unsplash hero by destination, title, dates, tagline
-- **Drag to reorder** activities within a time block (with mobile ↑/↓ fallback)
-- **Dark / light mode** — Warm dark default with teal accent
-- **Sample trips** — Tokyo, Iceland, and Lisbon starters on the home screen
-- **Mobile-first** — Bottom tab bar on small screens (Days · Map · Share)
+- **Multi-day trip builder** — Morning, afternoon, and evening blocks
+- **Shareable URLs** — Compressed trip in `#view?d=…` (LZ-String)
+- **Shareview** — Hero, timeline, route map, weather strip, mood themes
+- **Story card PNG** — Social-ready export
+- **ICS calendar export** — Timed activities → `.ics`
+- **Print stylesheet** — Clean itinerary printout
+- **Day templates & smart insights** — Templates + warnings with quick-fix actions
+- **Interactive map** — Geocoded pins + route polyline (Leaflet / OSM)
+- **Open-Meteo weather** — Forecast strip when days have dates
+- **Packing list** — Auto-suggestions from activity categories
+- **Trip tools** — JSON import/export, duplicate, undo, localStorage draft
+- **Live sync** — PeerJS room codes for co-editing
+- **Embed mode** — `#view?d=…&embed=1` for minimal chrome
+- **City & sight photos** — Curated Wikimedia images for sample trips; auto/Wikipedia lookup for custom stops
 
-## Quick start
+## Development
 
 ```bash
-# Option 1: open the file directly
-xdg-open index.html   # Linux
-open index.html       # macOS
-
-# Option 2: local static server
-python3 -m http.server 8765
-# → http://127.0.0.1:8765/index.html
+npm install
+npm run dev      # http://127.0.0.1:5173
+npm run build    # output in dist/
+npm run preview  # preview production build
+npm test         # Playwright E2E + unit checks (builds & serves preview)
 ```
+
+Open without npm: serve `dist/` after build, or see [`index.legacy.html`](index.legacy.html) (original single-file version).
 
 ## Routes
 
-| Hash    | Screen    |
-|---------|-----------|
-| (empty) | Home      |
-| `#plan` | Builder   |
+| Hash | Screen |
+|------|--------|
+| (empty) | Home |
+| `#plan` | Builder |
 | `#view` | Shareview |
 
-Use **Copy share link** to copy the page URL with `#view`. Trip data lives in memory only (no `localStorage`), so shared links are best for same-session screenshots unless you add URL-encoded state later.
+## Keyboard shortcuts (builder)
 
-## Tech stack
-
-- Pure HTML, CSS, and JavaScript in one file
-- [Fraunces](https://fonts.google.com/specimen/Fraunces) (Google Fonts) for display type
-- [Satoshi](https://www.fontshare.com/fonts/satoshi) (Fontshare) for UI
-- [Lucide](https://lucide.dev/) icons via CDN
-- [Unsplash Source](https://source.unsplash.com/) for destination hero images (with gradient fallback)
+| Key | Action |
+|-----|--------|
+| `n` | New activity (morning) |
+| `1`–`9` | Switch day |
+| `/` | Focus destination (home) |
+| `Ctrl/Cmd+Z` | Undo |
 
 ## Project structure
 
 ```
 Navora/
-├── index.html   # Entire app (styles + logic)
-├── README.md
-└── LICENSE
+├── index.html          # Vite entry
+├── src/
+│   ├── main.js
+│   ├── styles/main.css
+│   └── …modules
+├── public/
+├── dist/               # GitHub Pages artifact
+├── index.legacy.html   # Original monolith
+└── package.json
 ```
+
+## Deploy (GitHub Pages)
+
+Push to `main` — the included workflow builds `dist/` and deploys to Pages. Set Pages source to **GitHub Actions**.
+
+Site URL: `https://dpastoetter.github.io/Navora/`
 
 ## License
 

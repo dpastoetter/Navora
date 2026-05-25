@@ -1,0 +1,10 @@
+{
+  "name": "Navora",
+  "short_name": "Navora",
+  "description": "Shareable travel itineraries",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#171614",
+  "theme_color": "#01696f",
+  "icons": []
+}
