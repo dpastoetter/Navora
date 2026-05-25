@@ -54,7 +54,7 @@ export function renderWeatherStrip(days, tripDays) {
     .filter(d => d.date && byDate[d.date])
     .map(d => {
       const w = byDate[d.date];
-      return `<div class="weather-day"><strong>${escapeHtml(d.label)}</strong>${weatherIcon(w.code)}<br>${Math.round(w.max)}° / ${Math.round(w.min)}°</div>`;
+      return `<div class="weather-day"><strong>${escapeHtml(d.label)}</strong><span aria-hidden="true">${weatherIcon(w.code)}</span><br><span class="weather-temps">${Math.round(w.max)}° / ${Math.round(w.min)}°</span></div>`;
     });
   if (!items.length) return '';
   return `<div class="weather-strip">${items.join('')}</div>`;

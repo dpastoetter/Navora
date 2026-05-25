@@ -1,6 +1,7 @@
 export const CATEGORIES = ['food', 'culture', 'nature', 'transport', 'stay'];
 export const BLOCKS = ['morning', 'afternoon', 'evening'];
 export const BLOCK_LABELS = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening' };
+export const BLOCK_ICONS = { morning: 'sunrise', afternoon: 'sun', evening: 'moon' };
 export const CAT_ICONS = {
   food: 'utensils',
   culture: 'landmark',

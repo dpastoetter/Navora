@@ -1,4 +1,27 @@
-export const SAMPLE_TRIPS = [
+import { SIGHT_FILES } from './data/curated-images.js';
+import { slugify } from './images.js';
+
+function sampleAct(act) {
+  const path = SIGHT_FILES[slugify(act.title)] || '';
+  return { ...act, link: act.link ?? '', imageUrl: path };
+}
+
+function sampleDay(day) {
+  return {
+    ...day,
+    blocks: {
+      morning: day.blocks.morning.map(sampleAct),
+      afternoon: day.blocks.afternoon.map(sampleAct),
+      evening: day.blocks.evening.map(sampleAct)
+    }
+  };
+}
+
+function sampleTrip(trip) {
+  return { ...trip, days: trip.days.map(sampleDay) };
+}
+
+const RAW_SAMPLE_TRIPS = [
   {
     title: 'Tokyo Food & Culture',
     destination: 'Tokyo, Japan',
@@ -75,6 +98,8 @@ export const SAMPLE_TRIPS = [
     ]
   }
 ];
+
+export const SAMPLE_TRIPS = RAW_SAMPLE_TRIPS.map(sampleTrip);
 
 export const DAY_TEMPLATES = {
   culture: {

@@ -6,27 +6,29 @@ A travel planning tool that builds gorgeous, shareable itinerary pages. Built wi
 
 ## Screenshots
 
+Captured from the production build (`npm run build && npm run preview`, then `npm run screenshots`).
+
 ### Home
 
-Plan a trip, pick a destination, or start from a sample itinerary.
+Centered hero with Share / Map / Weather highlights, destination search, and sample trips with photo overlays.
 
-![Navora home screen — hero, destination search, and sample trips](docs/screenshots/home.png)
+![Navora home — hero, feature strip, and sample trip cards with destination photos](docs/screenshots/home.png)
 
 ### Builder
 
-Edit days with morning / afternoon / evening blocks, photos, maps, templates, and packing lists.
+Tokyo sample with larger activity photos, block icons, trip meta, day progress, and sidebar panels.
 
-![Navora builder — Tokyo sample trip with activity cards and sidebar](docs/screenshots/builder.png)
+![Navora builder — activity cards with photos, map, and insights sidebar](docs/screenshots/builder.png)
 
 ### Shareview
 
-Shareable read-only itinerary with hero image, weather, route map, and photo timeline.
+Share link view with destination hero, weather cards, route map, and timeline with sight photos.
 
-![Navora Shareview — Tokyo trip timeline and trip header](docs/screenshots/shareview.png)
+![Navora Shareview — hero, weather strip, and photo timeline](docs/screenshots/shareview.png)
 
 ### Mobile
 
-![Navora home on mobile](docs/screenshots/home-mobile.png)
+![Navora home on mobile — sample trips with destination thumbnails](docs/screenshots/home-mobile.png)
 
 To regenerate screenshots after UI changes:
 

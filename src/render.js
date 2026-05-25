@@ -1,4 +1,4 @@
-import { BLOCKS, BLOCK_LABELS, CATEGORIES, MOODS } from './constants.js';
+import { BLOCKS, BLOCK_LABELS, BLOCK_ICONS, CATEGORIES, MOODS } from './constants.js';
 import { appState, getActiveDay, createBlankTrip } from './state.js';
 import { SAMPLE_TRIPS } from './samples.js';
 import { escapeHtml, formatDateRange, createIcons } from './utils.js';
@@ -86,7 +86,7 @@ function renderTimeBlocks(day) {
     const listHtml = activities.length === 0
       ? `<div class="empty-state" data-action="add-activity" data-day-id="${day.id}" data-block="${block}">
            <i data-lucide="plus-circle" style="margin-bottom:0.5rem"></i>
-           <p>Add your first stop</p>
+           <p>Add your first stop here</p>
          </div>`
       : activities.map(act =>
           renderActivityCard(act, day.id, block, appState.newActivityIds.has(act.id))
@@ -94,7 +94,7 @@ function renderTimeBlocks(day) {
     return `
       <section class="time-block">
         <div class="time-block-header">
-          <h3>${BLOCK_LABELS[block]}</h3>
+          <h3><i data-lucide="${BLOCK_ICONS[block]}"></i> ${BLOCK_LABELS[block]}</h3>
           <button type="button" class="btn btn-ghost btn-sm builder-desktop-only" data-action="add-activity" data-day-id="${day.id}" data-block="${block}">
             <i data-lucide="plus"></i> Add
           </button>
@@ -111,9 +111,15 @@ export function renderHome() {
       '135deg, #2d4a6f 0%, #1a2838 50%, #171614 100%',
       '135deg, #6f4a2d 0%, #38281a 50%, #171614 100%'
     ][i];
+    const dayCount = t.days.length;
     return `
       <article class="card sample-card" data-action="load-sample" data-sample-index="${i}">
-        <div class="sample-thumb" style="background-image:url('${getDestinationImage(t.destination)}'), linear-gradient(${grad})"></div>
+        <div class="sample-thumb" style="background-image:url('${getDestinationImage(t.destination)}'), linear-gradient(${grad})">
+          <div class="sample-thumb-overlay">
+            <span class="sample-dest">${escapeHtml(t.destination)}</span>
+            <span class="sample-meta">${dayCount} day${dayCount === 1 ? '' : 's'}</span>
+          </div>
+        </div>
         <div class="sample-body">
           <h3>${escapeHtml(t.title)}</h3>
           <p>${escapeHtml(formatDateRange(t.startDate, t.endDate))}</p>
@@ -132,11 +138,18 @@ export function renderHome() {
       <section class="home-hero">
         <h1 class="home-logo display">Navora</h1>
         <p class="home-tagline">Plan gorgeous, shareable itineraries your friends will actually read.</p>
-        <form class="home-search" data-action="destination-submit">
-          <input class="input" type="text" name="destination" id="home-destination" placeholder="Where are you going?" required aria-label="Destination">
-          <button type="submit" class="btn btn-primary">Go</button>
-        </form>
-        <button type="button" class="btn btn-primary" data-action="plan-blank">Plan a trip</button>
+        <div class="home-features" aria-label="Features">
+          <span class="home-feature"><i data-lucide="link"></i> Shareable links</span>
+          <span class="home-feature"><i data-lucide="map"></i> Route maps</span>
+          <span class="home-feature"><i data-lucide="cloud-sun"></i> Weather</span>
+        </div>
+        <div class="home-cta-row">
+          <form class="home-search" data-action="destination-submit">
+            <input class="input" type="text" name="destination" id="home-destination" placeholder="Where are you going?" required aria-label="Destination">
+            <button type="submit" class="btn btn-primary">Go</button>
+          </form>
+          <button type="button" class="btn btn-ghost" data-action="plan-blank">Plan a trip</button>
+        </div>
         ${loadDraftBanner()}
       </section>
       <section class="home-samples">
@@ -179,6 +192,15 @@ export function renderBuilder() {
     <button type="button" class="day-chip ${d.id === appState.activeDayId ? 'active' : ''}" data-action="select-day" data-day-id="${d.id}">${escapeHtml(d.label)}</button>
   `).join('');
 
+  const activeIndex = trip.days.findIndex(d => d.id === appState.activeDayId);
+  const dayProgress = trip.days.length > 1
+    ? `<p class="day-progress">Day ${activeIndex + 1} of ${trip.days.length}</p>`
+    : '';
+  const tripMeta = [
+    trip.destination,
+    formatDateRange(trip.startDate, trip.endDate)
+  ].filter(Boolean).join(' · ');
+
   const moodButtons = MOODS.filter(m => m !== 'default').map(m => `
     <button type="button" class="mood-btn ${trip.shareMood === m ? 'active' : ''}" data-action="set-mood" data-mood="${m}">${m.replace('-', ' ')}</button>
   `).join('');
@@ -193,6 +215,7 @@ export function renderBuilder() {
       <aside class="builder-sidebar builder-desktop-only">
         <button type="button" class="brand" data-action="go-home" style="text-align:left;margin-bottom:0.5rem">← Navora</button>
         <input class="trip-title-input" type="text" value="${escapeHtml(trip.title)}" data-action="update-trip" data-field="title" placeholder="Trip title" aria-label="Trip title">
+        ${tripMeta ? `<p class="trip-meta-line">${escapeHtml(tripMeta)}</p>` : ''}
         <input class="input" type="text" value="${escapeHtml(trip.destination)}" data-action="update-trip" data-field="destination" placeholder="Destination" aria-label="Destination">
         <input class="input" type="text" value="${escapeHtml(trip.tagline)}" data-action="update-trip" data-field="tagline" placeholder="Tagline">
         <div style="display:flex;gap:0.5rem">
@@ -204,6 +227,7 @@ export function renderBuilder() {
           <input class="input" type="text" value="${escapeHtml(day.label)}" data-action="update-day" data-field="label" data-day-id="${day.id}" placeholder="Day label">
           <input class="input" type="date" value="${day.date || ''}" data-action="update-day" data-field="date" data-day-id="${day.id}" aria-label="Day date">
         </div>
+        ${dayProgress}
         <div class="day-list">${dayList}</div>
         <button type="button" class="btn btn-ghost btn-sm" data-action="add-day"><i data-lucide="plus"></i> Add day</button>
         <div class="sidebar-section">
@@ -339,6 +363,7 @@ export function renderShareview() {
         <div class="share-hero-overlay"></div>
         <div class="share-hero-content">
           <h1>${escapeHtml(trip.title)}</h1>
+          ${trip.destination ? `<p class="share-hero-destination">${escapeHtml(trip.destination)}</p>` : ''}
           <p class="dates">${escapeHtml(formatDateRange(trip.startDate, trip.endDate))}</p>
           ${trip.tagline ? `<p class="tagline">${escapeHtml(trip.tagline)}</p>` : ''}
         </div>

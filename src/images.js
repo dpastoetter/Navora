@@ -1,6 +1,31 @@
-import { DESTINATION_IMAGES, SIGHT_IMAGES } from './data/curated-images.js';
+import { DESTINATION_FILES, SIGHT_FILES } from './data/curated-images.js';
 import { appState } from './state.js';
 import { escapeHtml, heroImageUrl } from './utils.js';
+
+const BASE = import.meta.env.BASE_URL || '/';
+
+export function assetImage(relativePath) {
+  if (!relativePath) return '';
+  const clean = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+  return `${BASE}${clean}`;
+}
+
+/** Strip base or leading slash so bundled paths stay portable in trip JSON */
+export function bundledImageRelative(url) {
+  if (!url || url.startsWith('http')) return url || '';
+  let path = url;
+  if (BASE !== '/' && path.startsWith(BASE)) path = path.slice(BASE.length);
+  if (path.startsWith('/')) path = path.slice(1);
+  return path.startsWith('images/') ? path : url;
+}
+
+export function resolveImageSrc(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const rel = bundledImageRelative(url);
+  if (rel.startsWith('images/')) return assetImage(rel);
+  return url;
+}
 
 export function slugify(text) {
   return (text || '')
@@ -14,22 +39,29 @@ export function slugify(text) {
 export function getDestinationImage(destination) {
   if (!destination?.trim()) return '';
   const lower = destination.toLowerCase();
-  for (const [key, url] of Object.entries(DESTINATION_IMAGES)) {
-    if (lower.includes(key)) return url;
+  for (const [key, path] of Object.entries(DESTINATION_FILES)) {
+    if (lower.includes(key)) return assetImage(path);
   }
   return heroImageUrl(destination);
 }
 
-export function lookupCuratedSight(title, location) {
+export function lookupCuratedSightPath(title, location) {
   const slug = slugify(title);
-  if (SIGHT_IMAGES[slug]) return SIGHT_IMAGES[slug];
+  if (SIGHT_FILES[slug]) return SIGHT_FILES[slug];
   const locSlug = slugify(location);
-  if (locSlug && SIGHT_IMAGES[locSlug]) return SIGHT_IMAGES[locSlug];
+  if (locSlug && SIGHT_FILES[locSlug]) return SIGHT_FILES[locSlug];
   return '';
 }
 
+export function lookupCuratedSight(title, location) {
+  return resolveImageSrc(lookupCuratedSightPath(title, location));
+}
+
 export function resolveActivityImage(act, destination) {
-  if (act.imageUrl) return act.imageUrl;
+  if (act.imageUrl) {
+    const resolved = resolveImageSrc(act.imageUrl);
+    if (resolved) return resolved;
+  }
   const curated = lookupCuratedSight(act.title, act.location);
   if (curated) return curated;
   const cacheKey = `img:${slugify(act.title)}|${slugify(act.location)}|${slugify(destination)}`;
@@ -43,8 +75,10 @@ export function enrichTripImages(trip) {
     for (const block of ['morning', 'afternoon', 'evening']) {
       for (const act of day.blocks[block] || []) {
         if (!act.imageUrl) {
-          const url = lookupCuratedSight(act.title, act.location);
-          if (url) act.imageUrl = url;
+          const path = lookupCuratedSightPath(act.title, act.location);
+          if (path) act.imageUrl = path;
+        } else if (!act.imageUrl.startsWith('http')) {
+          act.imageUrl = bundledImageRelative(act.imageUrl);
         }
       }
     }
@@ -84,11 +118,13 @@ export async function fetchWikimediaThumbnail(query) {
 }
 
 export async function fetchActivityImage(act, destination) {
-  if (act.imageUrl) return act.imageUrl;
-  const curated = lookupCuratedSight(act.title, act.location);
-  if (curated) {
-    act.imageUrl = curated;
-    return curated;
+  if (act.imageUrl && resolveActivityImage(act, destination)) {
+    return resolveActivityImage(act, destination);
+  }
+  const curatedPath = lookupCuratedSightPath(act.title, act.location);
+  if (curatedPath) {
+    act.imageUrl = curatedPath;
+    return resolveImageSrc(curatedPath);
   }
   const query = [act.title, act.location, destination].filter(Boolean).join(' ');
   const url = await fetchWikimediaThumbnail(query);
@@ -102,8 +138,11 @@ export async function fetchActivityImage(act, destination) {
 }
 
 export function renderPhotoHtml(url, className, alt = '') {
-  if (!url) return `<div class="${className} photo-placeholder" aria-hidden="true"><i data-lucide="image"></i></div>`;
-  return `<img class="${className}" src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer" decoding="async">`;
+  const src = resolveImageSrc(url);
+  if (!src) {
+    return `<div class="${className} photo-placeholder" aria-hidden="true"><i data-lucide="image"></i></div>`;
+  }
+  return `<img class="${className}" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async">`;
 }
 
 export async function prefetchTripImages(trip, onProgress) {
