@@ -1,29 +1,34 @@
-import { uid, emptyBlocks } from './utils.js';
+import { CATEGORIES, MOODS } from './constants.js';
+import { uid, emptyBlocks, safeHttpUrl } from './utils.js';
 
 export function normalizeActivity(a) {
+  const category = CATEGORIES.includes(a.category) ? a.category : 'culture';
+  const rawImage = typeof a.imageUrl === 'string' ? a.imageUrl : '';
+  const imageUrl = rawImage.startsWith('images/') ? rawImage : safeHttpUrl(rawImage);
   return {
     id: a.id || uid(),
     title: a.title || '',
     location: a.location || '',
     notes: a.notes || '',
-    category: a.category || 'culture',
-    link: a.link || '',
+    category,
+    link: safeHttpUrl(a.link || ''),
     timeStart: a.timeStart || '',
     timeEnd: a.timeEnd || '',
     lat: a.lat ?? null,
     lng: a.lng ?? null,
-    imageUrl: a.imageUrl || ''
+    imageUrl
   };
 }
 
 export function normalizeTrip(trip) {
+  const shareMood = MOODS.includes(trip.shareMood) ? trip.shareMood : 'default';
   return {
     title: trip.title || 'My Trip',
     destination: trip.destination || '',
     tagline: trip.tagline || '',
     startDate: trip.startDate || '',
     endDate: trip.endDate || '',
-    shareMood: trip.shareMood || 'default',
+    shareMood,
     packing: trip.packing || {},
     days: (trip.days || []).map((d, i) => ({
       id: d.id || uid(),

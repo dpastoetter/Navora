@@ -1,7 +1,7 @@
-import { uid, cloneTrip, showToast } from './utils.js';
+import { uid, cloneTrip, showToast, safeHttpUrl } from './utils.js';
 import { appState, normalizeActivity, normalizeTrip, createBlankTrip, getActiveDay } from './state.js';
 import { DAY_TEMPLATES } from './samples.js';
-import { BLOCKS } from './constants.js';
+import { BLOCKS, CATEGORIES } from './constants.js';
 import { pushUndo } from './undo.js';
 import { enrichTripImages } from './images.js';
 import { scheduleSaveDraft } from './draft.js';
@@ -97,7 +97,13 @@ export function updateActivity(dayId, block, actId, field, value) {
   const day = appState.trip?.days.find(d => d.id === dayId);
   const act = day?.blocks[block]?.find(a => a.id === actId);
   if (!act) return false;
-  act[field] = value;
+  if (field === 'link') {
+    act.link = safeHttpUrl(value);
+  } else if (field === 'category') {
+    act.category = CATEGORIES.includes(value) ? value : 'culture';
+  } else {
+    act[field] = value;
+  }
   if (field === 'location') {
     act.lat = null;
     act.lng = null;

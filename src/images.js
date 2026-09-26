@@ -24,7 +24,7 @@ export function resolveImageSrc(url) {
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   const rel = bundledImageRelative(url);
   if (rel.startsWith('images/')) return assetImage(rel);
-  return url;
+  return '';
 }
 
 export function slugify(text) {

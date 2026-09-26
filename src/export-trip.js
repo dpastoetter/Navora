@@ -2,7 +2,7 @@ import html2canvas from 'html2canvas';
 import { BLOCKS, BLOCK_LABELS, CAT_ICONS } from './constants.js';
 import { appState } from './state.js';
 import { buildHash } from './router.js';
-import { escapeHtml, formatDateRange, showToast } from './utils.js';
+import { escapeHtml, formatDateRange, safeHttpUrl, showToast } from './utils.js';
 import { getDestinationImage, resolveActivityImage, renderPhotoHtml } from './images.js';
 
 function icsEscape(s) {
@@ -125,8 +125,9 @@ export function buildTimelineHtml(trip) {
       dayItems += `<p class="timeline-block-label">${BLOCK_LABELS[block]}</p>`;
       for (const act of acts) {
         const icon = CAT_ICONS[act.category] || 'map-pin';
-        const linkHtml = act.link
-          ? `<a href="${escapeHtml(act.link)}" target="_blank" rel="noopener">Visit link →</a>`
+        const safeLink = safeHttpUrl(act.link);
+        const linkHtml = safeLink
+          ? `<a href="${escapeHtml(safeLink)}" target="_blank" rel="noopener noreferrer">Visit link →</a>`
           : '';
         const imgUrl = resolveActivityImage(act, trip.destination);
         dayItems += `

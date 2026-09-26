@@ -10,6 +10,17 @@ export function escapeHtml(s) {
   return d.innerHTML;
 }
 
+/** Allow only http(s) URLs in href/src attributes (blocks javascript:, data:, etc.). */
+export function safeHttpUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  try {
+    const parsed = new URL(trimmed, 'https://example.invalid');
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return trimmed;
+  } catch (_) { /* invalid */ }
+  return '';
+}
+
 export function cloneTrip(trip) {
   return JSON.parse(JSON.stringify(trip));
 }

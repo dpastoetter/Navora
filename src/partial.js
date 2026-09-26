@@ -5,6 +5,7 @@ import { appState } from './state.js';
 import { createIcons, formatRelativeTime } from './utils.js';
 import { getDraftSavedAt } from './prefs.js';
 import { renderActivityCard } from './render.js';
+import { CATEGORIES } from './constants.js';
 
 export function refreshSidebarPanels(weatherDays) {
   const hints = document.querySelector('[data-partial="hints"]');
@@ -114,12 +115,13 @@ function findActivity(actId) {
 }
 
 export function updateActivityPill(actId, category) {
+  const safe = CATEGORIES.includes(category) ? category : 'culture';
   const card = document.querySelector(`[data-act-id="${actId}"]`);
   if (!card) return;
   const pill = card.querySelector('.pill');
   if (pill) {
-    pill.className = `pill pill-${category}`;
-    pill.textContent = category;
+    pill.className = `pill pill-${safe}`;
+    pill.textContent = safe;
   }
 }
 
